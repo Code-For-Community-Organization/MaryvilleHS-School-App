@@ -9,13 +9,30 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        TabView {
+            TodayView(scheduleViewViewModel: SharedScheduleInformation())
+                .tabItem{
+                    Label("Today", systemSymbol: .squareGrid2x2Fill)
+                }
+
+            Text("A")
+                .tabItem{
+                    Label("Grades", systemSymbol: .graduationcapFill)
+
+                }
+            Text("A")
+                .tabItem{
+                    Label("Schedule", systemSymbol: .calendar)
+                }
+            NewsView()
+                .tabItem{
+                    Label("News", systemSymbol: .newspaperFill)
+                }
+            Text("A")
+                .tabItem {
+                    Label("Search", systemSymbol: .magnifyingglass)
+                }
         }
-        .padding()
     }
 }
 
