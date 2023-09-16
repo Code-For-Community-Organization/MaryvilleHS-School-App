@@ -4,10 +4,15 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>MVHS.xcscheme_^#shared#^_</key>
+		<key>MVHS (Debug).xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>0</integer>
+		</dict>
+		<key>MVHS (Release).xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>4</integer>
 		</dict>
 		<key>Playground (Playground) 1.xcscheme</key>
 		<dict>
@@ -29,6 +34,24 @@
 			<false/>
 			<key>orderHint</key>
 			<integer>1</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>6253F9CB2958E598003F33A4</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>6253F9DC2958E59A003F33A4</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>6253F9E62958E59A003F33A4</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

@@ -14,25 +14,18 @@ struct ContentView: View {
                 .tabItem{
                     Label("Today", systemSymbol: .squareGrid2x2Fill)
                 }
-
-            Text("A")
+            MasterCalendarView(calendarViewModel: MasterCalendarViewModel())
                 .tabItem{
-                    Label("Grades", systemSymbol: .graduationcapFill)
-
-                }
-            Text("A")
-                .tabItem{
-                    Label("Schedule", systemSymbol: .calendar)
+                    Label("Calendar", systemSymbol: .calendar)
                 }
             NewsView()
                 .tabItem{
                     Label("News", systemSymbol: .newspaperFill)
                 }
-            Text("A")
-                .tabItem {
-                    Label("Search", systemSymbol: .magnifyingglass)
-                }
         }
+        .tint(.appPrimary)
+        
+        
     }
 }
 

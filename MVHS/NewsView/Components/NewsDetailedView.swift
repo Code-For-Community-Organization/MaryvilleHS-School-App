@@ -11,71 +11,31 @@ import Kingfisher
 struct NewsDetailedView: View {
     @EnvironmentObject var newsViewViewModel: NewsViewViewModel
     @Binding var newsEntry: NewsEntry
+
     let scheduleDateHelper = ScheduleDateHelper()
     let imageHeight = UIScreen.screenHeight/CGFloat(2)
     var body: some View {
-        GeometryReader {geo in
-                ScrollView {
-                    VStack {
-                        if UIScreen.idiom == .pad {
-                            KFImage(newsEntry.imageURL)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: geo.size.width)
-                                .frame(maxHeight: imageHeight)
-                                .clipped()
-                        }
-                        else {
-                            KFImage(newsEntry.imageURL)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: UIScreen.screenWidth)
-                                .frame(maxHeight: imageHeight)
-                                .clipped()
-                                .ignoresSafeArea()
-                        }
-                        Group {
-                            Text(newsEntry.title)
-                                .font(.system(.title, design: .serif))
-                                .fontWeight(.bold)
-                                .textAlign(.leading)
-                                .padding(.top, -1)
-//
-//                            Text("By: \(newsEntry.author)")
-//                                .font(.subheadline)
-//                                .fontWeight(.medium)
-//                                .textAlign(.leading)
-//                                .foregroundColor(.platformSecondaryLabel)
-//                                .padding(.top, 1)
-//                                .padding(.bottom, 20)
-
-                            if let text = newsEntry.bodyText {
-                                Text(text)
-                                    .font(.system(.headline, design: .serif))
-                                    .fontWeight(.light)
-                                    .lineLimit(nil)
-
-                            }
-                            else {
-                                Text(String(repeating: "placeholder", count: 100))
-                                    .redacted(reason: .placeholder)
-                            }
-                        }
-                        .padding(EdgeInsets(top: 0, leading: 30, bottom: 10, trailing: 30))
-                        .frame(maxWidth: 600)
-                        Spacer()
-
-                    }
+        Group {
+            if let text = newsEntry.bodyText {
+                WKWebViewRepresentable(HTMLString: text)
 
             }
-                .edgesIgnoringSafeArea(.top)
+            else {
+                Text(String(repeating: "placeholder", count: 100))
+                    .redacted(reason: .placeholder)
+            }
         }
         .onAppear {
-
+            newsEntry.fetchBodyText{text in
+                withAnimation {
+                    newsEntry.bodyText = text
+                }
+            }
         }
         .navigationBarItems(trailing: NewsNavigationBarButtons(newsEntry: newsEntry).environmentObject(newsViewViewModel))
         .navigationBarTitleDisplayMode(.inline)
     }
+
 }
 
 struct NewsDetailedView_Previews: PreviewProvider {

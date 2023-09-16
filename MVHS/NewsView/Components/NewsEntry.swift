@@ -7,12 +7,35 @@
 
 import Foundation
 import Combine
+import SwiftyJSON
 
 struct NewsEntry: Hashable, Codable {
     var id: Int
     var title: String
     var imageURL: URL?
     var bodyText: String? = ""
+
+    func fetchBodyText(completion: @escaping (String) -> Void) {
+        let url = Constants.MvhsApiPath.detailedNews
+        URLSession.shared.sendMvhsGetRequest(path: url) {(data, response, error) in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let data = data,
+                  let json = try? JSON(data: data) else {
+                print(String(data: data!, encoding: .utf8))
+                return
+            }
+            let body = json["$jason"]["head"]["templates"]["body"]
+            if let html = body["sections"][0]["items"][4]["text"].string {
+                completion(html)
+            }
+
+        }
+    }
+
 }
 
 extension NewsEntry {

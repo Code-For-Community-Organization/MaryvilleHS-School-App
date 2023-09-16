@@ -14,7 +14,7 @@ class TodayViewViewModel: ObservableObject {
     @Published var showEditModal = false
     @Published var showNetworkError = true
     @Published var showTeamsBanner = true
-    @Published var selectionMode: PeriodCategory = .firstLunch
+    @Published var selectionMode: ScheduleCategory = .regular
     @Published var lastUpdateTime: Date?
 
     @Published var showToolbar = true

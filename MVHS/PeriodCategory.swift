@@ -41,3 +41,7 @@ enum PeriodCategory: String, Codable {
         return true
     }
 }
+
+enum ScheduleCategory: String, Codable {
+    case regular, morning, afternoon, delay
+}

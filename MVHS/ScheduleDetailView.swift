@@ -10,342 +10,115 @@ import SFSafeSymbols
 import SwiftUIVisualEffects
 
 struct ScheduleDetailView: View {
-    @Environment(\.colorScheme) var colorScheme: ColorScheme
-
-    init(scheduleDay: ScheduleDay? = nil,
-         horizontalPadding: Bool = true,
-         showBackgroundImage: Bool = true,
-         respondedSurvey: Bool = false) {
-        self.scheduleDay = scheduleDay
-        self.horizontalPadding = horizontalPadding
-        self.showBackgroundImage = showBackgroundImage
-
-        if showBackgroundImage {
-            UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.white]
-        }
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithDefaultBackground()
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        UINavigationBar.appearance().standardAppearance = appearance
-    }
-    
-    @State var bottomTextScreenRatio: Double = 0
-    @State var enableVisualEffects = true
-    
-    
-    @State var tabBarController: UITabBarController?
-    var scheduleDay: ScheduleDay?
-    //Periods before lunch, 1st out of 3 UI sections
-    var preLunchPeriods: [ClassPeriod] {
-        let periods = scheduleDay?.periods ?? []
-        let firstIndex = periods.firstIndex{$0.periodCategory.isLunchRevolving}
-        if let firstIndex = firstIndex {
-            return Array(periods[0..<firstIndex])
-        }
-        let removingPeriod8 = periods.filter({$0.periodNumber != 8})
-        
-        return removingPeriod8 //Fallback on all periods, assuming no lunch or single lunch
-    }
-    
-    //1st or 2nd lunch revolving periods, 2nd out of 3 UI sections
-    var lunchPeriods: LunchBlock? {
-        let periods = scheduleDay?.periods ?? []
-        let firstIndex = scheduleDay?.periods.firstIndex{$0.periodCategory.isLunchRevolving}
-        let lastIndex = scheduleDay?.periods.lastIndex{$0.periodCategory.isLunchRevolving} //Last instance 1st/2nd nutrition block
-        if let firstIndex = firstIndex,
-           let lastIndex = lastIndex {
-            let lunchPeriods = Array(periods[firstIndex...lastIndex])
-            return LunchBlock(from: lunchPeriods)
-        }
-        return nil
-    }
-    
-    //Periods after lunch, 3rd out of 3 UI sections
-    var postLunchPeriods: [ClassPeriod] {
-        let lastIndex = scheduleDay?.periods.lastIndex{$0.periodCategory.isLunchRevolving}
-        if let lastIndex = lastIndex, let scheduleDay = scheduleDay  {
-            let removingPeriod8 = scheduleDay.periods.filter {$0.periodNumber != 8}
-            //lastIndex + 1 to shorten array, remove unwanted
-            return Array(removingPeriod8.suffix(from: lastIndex + 1))
-        }
-        return []
-    }
-
-    var period8: ClassPeriod? {
-        scheduleDay?.periods.filter {$0.periodNumber == 8}.first
-    }
-    
-    var scheduleDateDescription: String {
-        let date = scheduleDay?.date ?? Date()
-        let format = DateFormatter()
-        format.dateFormat = "EEEE, MMM d"
-        let formattedDate = format.string(from: date)
-        return formattedDate
-    }
-    
-    var shouldFallback: Bool {
-        return developerScheduleOn ||
-        scheduleDay?.periods.isEmpty ?? true
-    }
-    
-    var horizontalPadding = true
-    var showBackgroundImage = true
-    @State var hapticsManager = HapticsManager(impactStyle: .light)
-    @State private var developerScheduleOn = false
-
-
+    @Binding var selection: ScheduleCategory
     var body: some View {
-        ScrollView {
+        switch selection {
+        case .regular:
+            Text("""
+8:25 - 9:55 | First Period
+9:55 - 10:10 | Break
+10:10 - 11:40 | Second Period
+11:47 - 1:48 | Third Period
 
-                if showBackgroundImage  {
-                    VStack {
-                        Text("How do you like the new look?")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
+**A LUNCH**
+11:43 - 12:13 | Lunch
+12:17 - 1:48 | Class
 
-                        HStack {
-                            Button(action: {
-                                hapticsManager.notificationImpact(.success)
+**B LUNCH**
+11:47 - 12:13 | Class
+12:13 - 12:43 | Lunch
+12:46 - 1:48 | Class
 
-                            }) {
-                                Image(systemSymbol: .handThumbsupFill)
-                                    .font(.title)
-                                    .foregroundColor(.systemGreen)
-                                    .padding(.vertical, 10)
-                                    .frame(maxWidth: .infinity)
-                                    .background(BlurEffect().blurEffectStyle(.systemChromeMaterial))
-                                    .roundedCorners(cornerRadius: 10)
-                                    .padding(.trailing, 10)
-                            }
+**C LUNCH**
+11:47 - 12:48 | Class
+12:48 - 1:18 | Lunch
+1:21 - 1:48 | Class
 
-                            Button(action: {
-                                hapticsManager.notificationImpact(.success)
-                            
-                            }) {
-                                Image(systemSymbol: .handThumbsdownFill)
-                                    .font(.title)
-                                    .foregroundColor(.systemRed)
-                                    .padding(.vertical, 10)
-                                    .frame(maxWidth: .infinity)
-                                    .background(BlurEffect().blurEffectStyle(.systemChromeMaterial))
-                                    .roundedCorners(cornerRadius: 10)
-                                    .padding(.leading, 10)
-                            }
-                        }
-                        .padding(.bottom)
-                        .padding(.top, 1)
-                        .padding(.horizontal)
+**D LUNCH**
+11:47 - 1:18 | Class
+1:18 - 1:48 | Lunch
+1:55 - 3:25 | Fourth Period
+""")
+        case .morning:
+            Text("""
+8:25 - 9:45 | First Period
+9:50 - 10:35 | Activity Period
+10:35 - 11:55 | Second Period
+12:00 - 2:00 | Third Period
 
-                        Rectangle()
-                            .frame(maxWidth: .infinity, maxHeight: 0.33)
-                            .padding(.horizontal)
-                            .vibrancyEffect()
-                    }
-                    .padding(.top)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                }
+**A LUNCH**
+11:55 - 12:25 | Lunch
+12:30 - 2:00 | Class
 
-                VStack(spacing: 10) {
-                    ForEach(preLunchPeriods, id: \.self){period in
-                        PeriodBlockItem(block: period, isBlurred: showBackgroundImage)
-                    }
+**B LUNCH**
+12:00 - 12:25 | Class
+12:25 - 12:55 | Lunch
+12:58 - 2:00 | Class
 
-                    if let lunchPeriods = lunchPeriods {
-                        HStack {
-                            VStack {
-                                // Force unwrap - shouldFallBack should catch nil
-                                let firstLunch = lunchPeriods.firstLunch
-                                makeLunchTitle(content: "1st Lunch Times")
-                                PeriodBlockItem(block: firstLunch.lunchPeriod,
-                                                twoLine: true,
-                                                isBlurred: showBackgroundImage)
-                                PeriodBlockItem(block: firstLunch.revolvingPeriod,
-                                                twoLine: true,
-                                                isBlurred: showBackgroundImage)
-                            }
-                            .padding(.trailing, 5)
-                            VStack {
-                                let secondLunch = lunchPeriods.secondLunch
-                                makeLunchTitle(content: "2nd Lunch Times")
-                                PeriodBlockItem(block: secondLunch.lunchPeriod,
-                                                twoLine: true,
-                                                isBlurred: showBackgroundImage)
-                                PeriodBlockItem(block: secondLunch.revolvingPeriod,
-                                                twoLine: true,
-                                                isBlurred: showBackgroundImage)
-                            }
-                        }
-                    }
+**C LUNCH**
+12:00 - 1:00 | Class
+1:00 - 1:30 | Lunch
+1:33 - 2:00 | Class
 
+**D LUNCH**
+12:00 - 1:30 | Class
+1:30 - 2:00 | Lunch
+2:05 - 3:25 | Fourth Period
+""")
+        case .afternoon:
+            Text("""
+8:25 - 9:40 | First Period
+9:45 - 11:05 | Second Period
+11:10 - 1:15 | Third Period
 
+**A LUNCH**
+11:05 - 11:35 | Lunch
+11:40 - 1:15 | Class
 
-                    ForEach(postLunchPeriods, id: \.self){period in
-                        PeriodBlockItem(block: period,
-                                        isBlurred: showBackgroundImage)
-                    }
-//
-//                    if let period8 = period8,
-//                       userSettings.isPeriod8On {
-//                        Divider()
-//                            .if(showBackgroundImage) {
-//                                $0
-//                                    .overlay(Color.white)
-//                            }
-//
-//                        Text("Most students don't have period 8. Disable in settings.")
-//                            .font(.caption)
-//                            .if(showBackgroundImage, transform: {
-//                                $0
-//                                    .vibrancyEffect()
-//                                    .vibrancyEffectStyle(.label)
-//                                    .colorScheme(.dark)
-//
-//                            }, elseThen: {
-//                                $0
-//                                    .foregroundColor(.platformSecondaryLabel)
-//                            })
-//                                .padding(.bottom, 1)
-//
-//                                PeriodBlockItem(block: period8, isBlurred: showBackgroundImage)
-//                    }
-                    if let atheleticsInfo = scheduleDay?.atheleticsInfo {
-                        Text(atheleticsInfo)
-                            .if(showBackgroundImage, transform: {
-                                $0
-                                    .vibrancyEffect()
-                                    .vibrancyEffectStyle(.label)
-                                    .colorScheme(.dark)
-                            }, elseThen: {
-                                $0
-                                    .foregroundColor(.platformSecondaryLabel)
-                            })
-                                .textAlign(.leading)
+**B LUNCH**
+11:10 - 11:35 | Class
+11:35 - 12:05 | Lunch
+12:10 - 1:15 | Class
 
-                    }
+**C LUNCH**
+11:10 - 12:15 | Class
+12:15 - 12:45 | Lunch
+12:50 - 1:15 | Class
 
-                }
-                .padding(.horizontal, horizontalPadding ? 16 : 0)
-                .padding(.vertical, showBackgroundImage ? 16: 0)
+**D LUNCH**
+11:10 - 12:45 | Class
+12:45 - 1:15 | Lunch
+1:20 - 2:35 | Fourth Period
+2:40 - 3:25 | Activity Period
+""")
+        case .delay:
+            Text("""
+9:25 - 10:40 | First Period
+10:45 - 12:00 | Second Period
+12:05 - 2:05 | Third Period
+
+**A LUNCH**
+12:00 - 12:30 | Lunch
+12:33 - 2:05 | Class
+
+**B LUNCH**
+12:05 - 12:30 | Class
+12:30 - 1:00 | Lunch
+1:03- 2:05 | Class
+
+**C LUNCH**
+12:05 - 1:00 | Class
+1:05 - 1:35 | Lunch
+1:38 - 2:05 | Class
+
+**D LUNCH**
+12:05 - 1:35 | Class
+1:35 - 2:05 | Lunch
+2:10 - 3:25 | Fourth Period
+""")
         }
-        .navigationTitle(scheduleDateDescription)
-        .navigationBarTitleDisplayMode(.inline)
-        .background (
-            ZStack {
-                // 3 cases of background:
-                // 1. Used in TodayView, no background (white)
-                // 2. Used in normal schedule, animated dynamic blur background
-                // 3. Used in fallback text-only, static blur background
-                if showBackgroundImage {
-                    AnimatedBlurBackground(bottomTextScreenRatio: $bottomTextScreenRatio,
-                                           dynamicBlurred: !shouldFallback)
-                }
-            }
-        )
-//        .introspectTabBarController {tabController in
-//            if !shouldFallback {
-//                tabController.tabBar.barStyle = .black
-//            }
-//            tabBarController = tabController
-//        }
-//        .onDisappear {
-//            tabBarController?.tabBar.barStyle = .default
-//        }
-        
-        
     }
     
-    func formatTime(_ date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "h:mm a"
-        return dateFormatter.string(from: date)
-    }
-    
-    func makeLunchTitle(content: String) -> some View {
-        Text(content)
-            .font(.footnote)
-            .fontWeight(.bold)
-            .padding(.bottom, -3)
-            .padding(.leading)
-            .if(showBackgroundImage, transform: {
-                $0
-                    .vibrancyEffect()
-                    .vibrancyEffectStyle(.label)
-                    .colorScheme(.dark)
-                    .if(colorScheme == .light) {view in
-                        view
-                            .shadow(color: Color.label.opacity(0.85), radius: 1, x: 0, y: 0.8)
 
-                    }
-            }, elseThen: {
-                $0
-                    .foregroundColor(.platformSecondaryLabel)
-                
-            })
-                .textAlign(.leading)
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-    }
-
-    struct LunchBlock {
-        struct Lunch {
-            var revolvingPeriod: ClassPeriod
-            var lunchPeriod: ClassPeriod
-        }
-        var firstLunch: Lunch
-        var secondLunch: Lunch
-
-        init?(from lunchPeriods: [ClassPeriod]) {
-            if let firstLunch = lunchPeriods.first(where: {$0.periodCategory == .firstLunch}),
-               let firstLunchPeriod = lunchPeriods.first(where: {$0.periodCategory == .firstLunchPeriod}),
-               let secondLunch = lunchPeriods.first(where: {$0.periodCategory == .secondLunch}),
-               let secondLunchPeriod = lunchPeriods.first(where: {$0.periodCategory == .secondLunchPeriod}) {
-                        self.firstLunch = Lunch(revolvingPeriod: firstLunchPeriod,
-                                           lunchPeriod: firstLunch)
-                        self.secondLunch = Lunch(revolvingPeriod: secondLunchPeriod,
-                                            lunchPeriod: secondLunch)
-                    }
-            else {
-                return nil
-            }
-        }
-    }
 }
 
-//struct ScheduleDetailView_Previews: PreviewProvider {
-//    static func configureSettings(legacySchedule: Bool = false) -> UserSettings {
-//        let settings = UserSettings()
-//        settings.preferLegacySchedule = legacySchedule
-//        settings.editableSettings = [.init(periodNumber: 6, textContent: "AP Calculus BC")]
-//        return settings
-//    }
-//    
-//    static var previews: some View {
-//        ScheduleDetailView(scheduleDay: .sampleScheduleDay,
-//                           showBackgroundImage: true,
-//                           respondedSurvey: false)
-//            .environmentObject(configureSettings())
-//            .previewDisplayName("Standard")
-//
-//        NavigationView {
-//            NavigationLink("Detail") {
-//                ScheduleDetailView(scheduleDay: .sampleScheduleDay, showBackgroundImage: true)
-//                    .environmentObject(configureSettings())
-//            }
-//        }
-//        .previewDisplayName("Navigation Stack Push")
-//
-//        ScheduleDetailView(scheduleDay: .sampleScheduleDay,
-//                           showBackgroundImage: false)
-//        .environmentObject(configureSettings(legacySchedule: true))
-//        .previewDisplayName("White Background Plain")
-//
-//        ScheduleDetailView(scheduleDay: .sampleScheduleDay,
-//                           showBackgroundImage: true)
-//        .environmentObject(configureSettings(legacySchedule: true))
-//
-//        ScheduleDetailView(scheduleDay: .sampleScheduleDay, showBackgroundImage: false)
-//            .environmentObject(configureSettings())
-//            .previewDisplayName("White Background Formatted")
-//    }
-//}

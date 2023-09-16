@@ -15,7 +15,7 @@ struct TodayView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            TodayHeroView(scheduleViewViewModel: scheduleViewViewModel, todayViewViewModel: todayViewViewModel)
+            TodayHeroView(todayViewViewModel: todayViewViewModel)
 
             if todayViewViewModel.showToolbar {
                 TodayViewHeader(viewModel: scheduleViewViewModel, todayViewModel: todayViewViewModel)
@@ -25,7 +25,7 @@ struct TodayView: View {
         .onAppear {
             UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(.appPrimary)
             UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.white], for: .selected)
-            UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor(.appSecondary)], for: .normal)
+            UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor(.black)], for: .normal)
         }
         .onDisappear {
             todayViewViewModel.showNetworkError = true
@@ -54,25 +54,17 @@ struct TodayViewHeader: View {
                     //.foregroundColor(.platformSecondaryLabel)
 
                 }
-                Button(action: {todayViewModel.showEditModal = true}, label: {
-                    HStack {
-                        Image(systemSymbol: .pencil)
-                            .font(Font.subheadline.weight(.semibold))
-                            .imageScale(.large)
-                            .padding(.trailing, -1)
+                Spacer()
+                Image("MVHSLogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxHeight: 50)
 
-                        Text("Edit")
-                            .font(Font.subheadline.weight(.semibold))
-                    }
-                    .foregroundColor(.appSecondary)
-                })
             }
         }
 
         .padding(EdgeInsets(top: -3, leading: 20, bottom: 7, trailing: 20))
-        .vibrancyEffectStyle(.secondaryLabel)
-        .background(BlurEffect().edgesIgnoringSafeArea(.all))
-        .blurEffectStyle(.systemThinMaterial)
+        .background(.thickMaterial)
 
     }
 }

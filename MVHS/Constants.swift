@@ -19,7 +19,7 @@ extension Constants {
         private static let primaryKey = "primary_color"
         static let primaryHex = "B30A0E"
         private static let secondaryKey = "secondary_color"
-        static let secondaryHex = "595959"
+        static let secondaryHex = "C4D6B0"
     }
 
     struct MvhsApiPath {
